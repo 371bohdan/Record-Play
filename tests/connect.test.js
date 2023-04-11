@@ -6,8 +6,9 @@ const app = require('../app');
 
 describe('Test server startup', () => {
   let server;
+  let url = 'mongodb+srv://magpie:123@cluster0.dtqc6ct.mongodb.net/data'
   beforeAll(async () => {
-    await mongoose.connect(process.env.MONGO_DATABASE_URL, {
+    await mongoose.connect(process.url, {
       useNewUrlParser: true,
       useUnifiedTopology: true
     });
