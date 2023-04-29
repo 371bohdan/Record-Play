@@ -10,8 +10,9 @@ const { get } = require('http');
 require('dotenv').config();
 
 
+
 function isLoggedIn(req, res, next){
-    if(req.isAuthenticated()) return next();
+    if(req.isAuthenticated() && req.user) return next();
     res.redirect('/login');
 }
 
@@ -66,82 +67,89 @@ router.get('/logout', (req, res) => {
 router.get('/register', async (req, res) => {
     res.render('register', {title: 'registration'});
 })
-router.post('/register', async (req, res) =>{
-    const {username, email, password, password2} = req.body;
+//I cover around variable for test mock
 
+
+const registerPost = async (req, res) => {
+    const { username, email, password, password2 } = req.body;
+  
     let errors = [];
-
-    if (!username || !email || !password || !password2){
-        errors.push({
-            msg: 'Please fill in all fields!'
-        });
+  
+    if (!username || !email || !password || !password2) {
+      errors.push({
+        msg: 'Please fill in all fields!',
+      });
     }
-
+  
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       errors.push({
-          msg: 'Invalid email format'
+        msg: 'Invalid email format',
       });
     }
-
+  
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       errors.push({
-          msg: 'User with this email already exists'
+        msg: 'User with this email already exists',
       });
     }
-
-    if(password !== password2){
-        errors.push({
-            msg: 'Passwords do not match'
-        });
+  
+    if (password !== password2) {
+      errors.push({
+        msg: 'Passwords do not match',
+      });
     }
-
-    if(password.length < 8){
-        errors.push({
-            msg: 'Password should be at least 8 characters'
-        });
+  
+    if (password.length < 8) {
+      errors.push({
+        msg: 'Password should be at least 8 characters',
+      });
     }
-
-    if(errors.length > 0){
-        res.render('register', {
-            errors,
-            username,
-            email,
-            password,
-            password2
-        });
+  
+    if (errors.length > 0) {
+      res.render('register', {
+        errors,
+        username,
+        email,
+        password,
+        password2,
+      });
     } else {
-        try {
-            const newUser = new User({
-                username: username,
-                email: email,
-                password: password
-            });
-
-            const salt = await bcrypt.genSalt(10);
-            const hash = await bcrypt.hash(newUser.password, salt);
-            newUser.password = hash;
-
-            await newUser.save();
-
-            req.flash('success', 'You are now registered and can login');
-            res.redirect('/login');
-        } catch (error) {
-            console.error(error);
-            errors.push({
-                msg: 'Server Error'
-            });
-            res.render('register', {
-                errors,
-                username,
-                email,
-                password,
-                password2
-            });
-        }
+      try {
+        const newUser = new User({
+          username: username,
+          email: email,
+          password: password,
+        });
+  
+        const salt = await bcrypt.genSalt(10);
+        const hash = await bcrypt.hash(newUser.password, salt);
+        newUser.password = hash;
+  
+        await newUser.save();
+  
+        req.flash('success', 'You are now registered and can login');
+        res.redirect('/login');
+      } catch (error) {
+        console.error(error);
+        errors.push({
+          msg: 'Server Error',
+        });
+        res.render('register', {
+          errors,
+          username,
+          email,
+          password,
+          password2,
+        });
+      }
     }
-});
+  };
+
+router.post('/register', registerPost)
+
+
 
 //Додання даних про воду
 
@@ -506,3 +514,8 @@ router.post('/set_data', async (req,res) => {
 
   
 module.exports = router;
+module.exports.additional = {
+    registerPost: registerPost,
+  };
+
+module.exports.isLoggedIn = isLoggedIn;

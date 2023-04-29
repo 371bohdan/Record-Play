@@ -12,7 +12,7 @@ const User = require('./models/user');
 const { allowInsecurePrototypeAccess } = require('@handlebars/allow-prototype-access');
 require('dotenv').config();
 const helpers = require('handlebars-helpers')();
-
+const router = require('./routes/start');
 
 //Реалізація routes, щоб забезпечити місцеположення файлів js
 const indexRouter = require('./routes/start');
@@ -30,10 +30,40 @@ const indexRouter = require('./routes/start');
 //run our server and dtabase
 const PORT = process.env.PORT || 3000;
 
-// наша так би мовити колекція бази даних, додаємо до нашої змінної так би мовити таблицю із колонками
+async function connectToDatabase() {
+    try {
+        const connection = await mongoose.connect(process.env.MONGO_DATABASE_URL, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true
+        });
+        console.log("Database MongoDB connect successful");
+        return connection;
+    } catch (err) {
+        console.log(`Something wrong with MongoDB ${err}`);
+        return null;
+    }
+}
+
 
 
 //middleware OS
+
+
+async function startServer() {
+    try {
+        const connection = await connectToDatabase();
+        if (!connection) {
+            console.log("Unable to connect to MongoDB. Exiting...");
+            process.exit(1);
+        }
+        await app.listen(PORT);
+        console.log(`Server has been started ${PORT}`);
+    } catch (err) {
+        console.log(`Error starting server: ${err}`);
+        process.exit(1);
+    }
+}
+
 
 
 //public = folder public with this directory who have name "__dirname"
@@ -117,23 +147,6 @@ passport.use(new localStrategy(
 ))
 
 
-passport.use(new localStrategy((username, password, done) =>{
-    User.findOne(
-        {
-        username:username
-    }).then((user) =>{
-        if(!user) return done(null, false, {message: 'Incorrect username'});
-        bcrypt.compare(password, user.password, (err, res) =>{
-            if(err) return done(err);
-            if(res === false) return done(null, false, {message: 'Incorrect password.'});
-            return done(null, user);
-        })
-    }).catch((err) => {
-        return done(err);
-    })
-}))
-    
-
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -146,23 +159,8 @@ app.use('/', indexRouter);
 
 
 
-async function runner_server() {mongoose.connect(process.env.MONGO_DATABASE_URL, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-}).then(()=>{
-    console.log("Database MongoDB connect succesful");
-    app.listen(PORT, (err) => {
-        if(err){
-            console.log(err);
-        }
-        else{
-        console.log(`Server has bean started ${PORT}`);
-        }
-    })
-    }).catch((err)=>{
-        console.log(`Something with MongoDB ${err}`);
-    })
-}
+
+
 
 
 
@@ -200,10 +198,11 @@ app.get('/setup', async (req, res) => {
 //connect our port
 
 
-runner_server();
+startServer();
 
 
-module.exports = app
+module.exports = {app, startServer};
+
 
 
 

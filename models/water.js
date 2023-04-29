@@ -52,7 +52,7 @@ const analys_waterSchema = new mongoose.Schema({
         min: 0,
         validate: {
             validator: function(value) {
-              return value % 1 !== 0;
+                return !isNaN(parseFloat(value)) && parseFloat(value).toString() === value.toString();
             },
             message: props => `${props.value} is not a floating point number!`
         }

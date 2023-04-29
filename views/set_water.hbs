@@ -3,11 +3,13 @@
     <a href="/profile" class="for_href">Back</a>
 </nav>
 
-{{#if messages.error}}
-    <div class="error">{{error.flash}}</div>
+{{#if flash.error}}
+  <div class="alert alert-danger">{{flash.error}}</div>
 {{/if}}
-{{#if messages.success}}
-    <div class="success">{{success.flash}}</div>
+
+
+{{#if flash.success}}
+  <div class="alert alert-success">{{flash.success}}</div>
 {{/if}}
 
 <div class="water_data"> 
