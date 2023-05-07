@@ -2,45 +2,29 @@
 const { Builder, By, Key, until } = require('selenium-webdriver')
 const assert = require('assert')
 
-describe('Try2', function() {
+describe('Try3', function() {
   this.timeout(30000)
   let driver
   let vars
   beforeEach(async function() {
-    driver = await new Builder().forBrowser('firefox').build()
+    driver = await new Builder().forBrowser('chrome').build()
     vars = {}
   })
   afterEach(async function() {
     await driver.quit();
   })
-  it('Try2', async function() {
-    // Test name: Try2
-    // Step # | name | target | value
-    // 1 | open | /login | 
+  it('Try3', async function() {
     await driver.get("http://localhost:3000/login")
-    // 2 | setWindowSize | 1813x982 | 
     await driver.manage().window().setRect({ width: 1813, height: 982 })
-    // 3 | click | id=username | 
-    await driver.findElement(By.id("username")).click()
-    // 4 | type | id=username | rasty
-    await driver.findElement(By.id("username")).sendKeys("rasty")
-    // 5 | click | id=password | 
+    await driver.findElement(By.xpath("/html/body/form/input[1]")).click()
+    await driver.findElement(By.xpath("/html/body/form/input[1]")).sendKeys("rasty")
     await driver.findElement(By.id("password")).click()
-    // 6 | type | id=password | 123
     await driver.findElement(By.id("password")).sendKeys("123")
-    // 7 | click | name=submit | 
     await driver.findElement(By.name("submit")).click()
-    // 8 | click | css=tr:nth-child(3) .for_href | 
     await driver.findElement(By.css("tr:nth-child(3) .for_href")).click()
-    // 9 | click | name=result | 
     await driver.findElement(By.name("result")).click()
-    // 10 | type | name=result | 0.34
-    await driver.findElement(By.name("result")).sendKeys("0.34")
-    // 11 | click | css=input:nth-child(17) | 
-    await driver.findElement(By.css("input:nth-child(17)")).click()
-    // 12 | click | linkText=Exit from your account | 
+    await driver.findElement(By.name("result")).sendKeys("0.35")
+    await driver.findElement(By.name("result")).sendKeys(Key.ENTER)
     await driver.findElement(By.linkText("Exit from your account")).click()
-    // 13 | close |  | 
-    await driver.close()
   })
 })
